@@ -2,7 +2,8 @@
     Height="350"
     Loaded="MainWindow_OnLoaded"
     Title="MainWindow"
-    Width="525"
+    Width="1280"
+    WindowState="Maximized"
     mc:Ignorable="d"
     x:Class="WpfApplication2.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -12,6 +13,53 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
         <StackPanel>
+            <TabControl>
+                <TabItem Header="Все IP">
+                    <DataGrid AutoGenerateColumns="False" x:Name="dg_data">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}" Header="Наименование" />
+                            <DataGridTextColumn Binding="{Binding IpAdd}" Header="IP" />
+                            <DataGridTextColumn
+                                Binding="{Binding Status}"
+                                Header="Статус"
+                                Width="180">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <Trigger Property="Text" Value="DestinationHostUnreachable">
+                                                <Setter Property="Background" Value="Red" />
+                                            </Trigger>
+                                            <Trigger Property="Text" Value="TimedOut">
+                                                <Setter Property="Background" Value="DarkRed" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn
+                                Binding="{Binding Time}"
+                                Header="Время"
+                                Width="120" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+                <TabItem Header="Проблемные IP">
+                    <DataGrid
+                        AutoGenerateColumns="False"
+                        Margin="0,25,0,0"
+                        x:Name="dg_ProblemIp">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}" Header="Наименование" />
+                            <DataGridTextColumn Binding="{Binding IpAdd}" Header="IP" />
+                            <DataGridTextColumn
+                                Binding="{Binding Status}"
+                                Header="Статус"
+                                Width="180" />
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+                </TabItem>
+            </TabControl>
             <WrapPanel>
                 <Button
                     HorizontalAlignment="Left"
@@ -32,26 +80,14 @@
                     Пингануть
                 </Button>
             </WrapPanel>
-            <ListView x:Name="lv_data">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="Наименование" />
-                        <GridViewColumn DisplayMemberBinding="{Binding IpAdd}" Header="АйПи" />
-                        <GridViewColumn
-                            DisplayMemberBinding="{Binding Status}"
-                            Header="Статус"
-                            Width="80" />
-                        <GridViewColumn
-                            DisplayMemberBinding="{Binding Time}"
-                            Header="Время"
-                            Width="120" />
-                    </GridView>
-                </ListView.View>
 
-            </ListView>
+
+
         </StackPanel>
     </Grid>
 </Window>
+
+
 
 
 

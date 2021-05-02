@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace WpfApplication2
 {
@@ -25,15 +29,8 @@ namespace WpfApplication2
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            ipAddresses = new ObservableCollection<Address>();
-            problemAddresses = new ObservableCollection<Address>();
-            ipAddresses.Add(new Address("192.168.9.1","Микрота"));
-            ipAddresses.Add(new Address("8.8.8.8","Google"));
-            ipAddresses.Add(new Address("192.168.9.236","Ноут"));
-            for (int i = 0; i < 20; i++)
-            {
-                ipAddresses.Add(new Address("8.8.8.8","Тест " + i));
-            }
+            ipAddresses = DataInteract.GetCollection();
+            if (ipAddresses == null) ipAddresses = new ObservableCollection<Address>();
             dg_data.ItemsSource = ipAddresses;
 
         }
@@ -63,6 +60,7 @@ namespace WpfApplication2
         // }
         private async void Ping_button_OnClick(object sender, RoutedEventArgs e)
         {
+            problemAddresses = new ObservableCollection<Address>();
             dg_ProblemIp.ItemsSource = problemAddresses;
             foreach (var item in ipAddresses)
             {
@@ -78,7 +76,11 @@ namespace WpfApplication2
                 if (el != null)
                 {
                     item.Status = el.Status.ToString();
-                    if (item.Status == "Success") item.Time = Convert.ToInt32(el.RoundtripTime);
+                    if (item.Status == "Success")
+                    {
+                        item.Time = Convert.ToInt32(el.RoundtripTime);
+
+                    }
                     else
                     {
                         problemAddresses.Add(item);
@@ -86,6 +88,46 @@ namespace WpfApplication2
                 }
 
             }
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(Ip_TextBox.Text) || string.IsNullOrWhiteSpace(Name_TextBox.Text))
+            {
+                MessageBox.Show("IP-адрес и наименование должны быть заполнены!", "Ошибка!", MessageBoxButton.OK);
+                return;
+            }
+
+            IPAddress ip;
+            //var parse = IPAddress.TryParse(Ip_TextBox.Text, out ip);
+            var parse = DataInteract.IsIp(Ip_TextBox.Text);
+            if (!parse)
+            {
+                MessageBox.Show("Проверьте правильность ввода IP адреса!");
+                return;
+            }
+            ipAddresses.Add(new Address(Ip_TextBox.Text,Name_TextBox.Text));
+            Ip_TextBox.Clear();
+            Name_TextBox.Clear();
+    
+        }
+
+        private void MainWindow_OnClosing(object sender, CancelEventArgs e)
+        {
+            DataInteract.SaveCollection(ipAddresses);
+        }
+
+        private void Dg_data_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                var grid = sender as DataGrid;
+                if (grid.SelectedItem != null)
+                {
+                    ipAddresses.RemoveAt(grid.SelectedIndex);
+                }
+            }
+            
         }
     }
 }

@@ -1,9 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using WpfApplication2.Annotations;
 
 namespace WpfApplication2
 {
+    [Serializable]
     public class Address : INotifyPropertyChanged
     {
         private string status;

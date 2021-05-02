@@ -1,6 +1,7 @@
 ﻿<Window
     Height="350"
     Loaded="MainWindow_OnLoaded"
+    Closing="MainWindow_OnClosing"
     Title="MainWindow"
     Width="1280"
     WindowState="Maximized"
@@ -15,17 +16,21 @@
         <StackPanel>
             <TabControl>
                 <TabItem Header="Все IP">
-                    <DataGrid AutoGenerateColumns="False" x:Name="dg_data">
+                    <DataGrid KeyDown="Dg_data_OnKeyDown" AutoGenerateColumns="False" x:Name="dg_data">
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}" Header="Наименование" />
-                            <DataGridTextColumn Binding="{Binding IpAdd}" Header="IP" />
+                            <DataGridTextColumn IsReadOnly="True" Binding="{Binding IpAdd}" Header="IP" />
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Binding="{Binding Status}"
                                 Header="Статус"
                                 Width="180">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Style.Triggers>
+                                            <Trigger Property="Text" Value="Success">
+                                                <Setter Property="Background" Value="Chartreuse"></Setter>
+                                            </Trigger>
                                             <Trigger Property="Text" Value="DestinationHostUnreachable">
                                                 <Setter Property="Background" Value="Red" />
                                             </Trigger>
@@ -37,6 +42,7 @@
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                             <DataGridTextColumn
+                                IsReadOnly="True"
                                 Binding="{Binding Time}"
                                 Header="Время"
                                 Width="120" />
@@ -62,17 +68,23 @@
             </TabControl>
             <WrapPanel>
                 <Button
+                    Click="ButtonBase_OnClick"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Width="150">
                     Добавить IP
                 </Button>
+                <Label FontSize="16" VerticalAlignment="Center">IP: </Label>
                 <TextBox
+                    x:Name="Ip_TextBox"
                     Height="20"
                     HorizontalAlignment="Right"
                     Margin="10"
                     Width="200" />
+                <Label VerticalAlignment="Center" FontSize="16">Имя</Label>
+                <TextBox x:Name="Name_TextBox" VerticalContentAlignment="Center" Height="20" Width="200"></TextBox>
                 <Button
+                    Margin="20,0,0,0"
                     Background="Gold"
                     Click="Ping_button_OnClick"
                     VerticalAlignment="Center"

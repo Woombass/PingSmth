@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -19,9 +20,9 @@ namespace WpfApplication2
     /// </summary>
     public partial class MainWindow
     {
-        //private ObservableCollection<Address> ipAddresses = new ObservableCollection<Address>();
-        public ObservableCollection<Address> ipAddresses { get; set; }
-        public ObservableCollection<Address> problemAddresses { get; set; }
+        public ObservableCollection<Address> IpAddresses { get; set; }
+        public ObservableCollection<Address> ProblemAddresses { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -29,64 +30,37 @@ namespace WpfApplication2
 
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            ipAddresses = DataInteract.GetCollection();
-            if (ipAddresses == null) ipAddresses = new ObservableCollection<Address>();
-            dg_data.ItemsSource = ipAddresses;
-
-        }
-
-        async Task<PingReply> ping(string address)
-        {
-            PingReply pr = null;
-            try
+            if (!File.Exists($@"{Directory.GetCurrentDirectory()}\config.json"))
             {
-                pr = await new Ping().SendPingAsync(address);
-            }
-            catch (Exception e)
-            {
-                return null;
+                File.Create($@"{Directory.GetCurrentDirectory()}\config.json").Close();
             }
 
-            return pr;
+
+            IpAddresses = DataInteract.GetCollection();
+            if (IpAddresses == null) IpAddresses = new ObservableCollection<Address>();
+            dg_data.ItemsSource = IpAddresses;
         }
-        
-        // private async Task<List<PingReply>> PingAsync()
-        // {
-        //     Ping pingSender = new Ping();
-        //     var tasks = ipAddresses.Select((Machine => pingSender.SendPingAsync(Machine.IpAdd)));
-        //     var results = await Task.WhenAll(tasks);
-        //
-        //     return results.ToList();
-        // }
         private async void Ping_button_OnClick(object sender, RoutedEventArgs e)
         {
-            problemAddresses = new ObservableCollection<Address>();
-            dg_ProblemIp.ItemsSource = problemAddresses;
-            foreach (var item in ipAddresses)
+            ProblemAddresses = new ObservableCollection<Address>();
+            dg_ProblemIp.ItemsSource = ProblemAddresses;
+            var tasks = IpAddresses.Select(item => new Ping().SendPingAsync(item.IpAdd, 350));
+            var results = await Task.WhenAll(tasks);
+            if (results[0] == null)
             {
-                item.Status = String.Empty;
-                item.Time = 0;
-                var el = await ping(item.IpAdd);
-                if (el == null)
-                {
-                    MessageBox.Show("Проверьте подключение к сети!", "Ошибка!", MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return;
-                }
-                if (el != null)
-                {
-                    item.Status = el.Status.ToString();
-                    if (item.Status == "Success")
-                    {
-                        item.Time = Convert.ToInt32(el.RoundtripTime);
+                MessageBox.Show("Проверьте подключение к сети!", "Ошибка!", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
 
-                    }
-                    else
-                    {
-                        problemAddresses.Add(item);
-                    }
+            for (int i = 0; i < results.Length; i++)
+            {
+                IpAddresses[i].Status = results[i].Status.ToString();
+                IpAddresses[i].Time = results[i].RoundtripTime;
+                if (IpAddresses[i].Status.ToString() != "Success")
+                {
+                    ProblemAddresses.Add(IpAddresses[i]);
                 }
-
             }
         }
 
@@ -98,23 +72,27 @@ namespace WpfApplication2
                 return;
             }
 
-            IPAddress ip;
-            //var parse = IPAddress.TryParse(Ip_TextBox.Text, out ip);
             var parse = DataInteract.IsIp(Ip_TextBox.Text);
             if (!parse)
             {
                 MessageBox.Show("Проверьте правильность ввода IP адреса!");
                 return;
             }
-            ipAddresses.Add(new Address(Ip_TextBox.Text,Name_TextBox.Text));
+
+            IpAddresses.Add(new Address(Ip_TextBox.Text, Name_TextBox.Text));
             Ip_TextBox.Clear();
             Name_TextBox.Clear();
-    
         }
 
         private void MainWindow_OnClosing(object sender, CancelEventArgs e)
         {
-            DataInteract.SaveCollection(ipAddresses);
+            foreach (var item in IpAddresses)
+            {
+                item.Status = String.Empty;
+                item.Time = 0;
+            }
+
+            DataInteract.SaveCollection(IpAddresses);
         }
 
         private void Dg_data_OnKeyDown(object sender, KeyEventArgs e)
@@ -124,10 +102,9 @@ namespace WpfApplication2
                 var grid = sender as DataGrid;
                 if (grid.SelectedItem != null)
                 {
-                    ipAddresses.RemoveAt(grid.SelectedIndex);
+                    IpAddresses.RemoveAt(grid.SelectedIndex);
                 }
             }
-            
         }
     }
 }

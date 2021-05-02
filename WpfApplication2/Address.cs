@@ -5,11 +5,10 @@ using WpfApplication2.Annotations;
 
 namespace WpfApplication2
 {
-    [Serializable]
     public class Address : INotifyPropertyChanged
     {
-        private string status;
-        private long time;
+        private string _status;
+        private long _time;
         public string IpAdd { get; set; }
         public string Name { get; set; }
 
@@ -17,11 +16,11 @@ namespace WpfApplication2
         {
             get
             {
-                return status;
+                return _status;
             }
             set
             {
-                status = value;
+                _status = value;
                 OnPropertyChanged();
                 
             }
@@ -29,18 +28,18 @@ namespace WpfApplication2
 
         public long Time
         {
-            get => time;
+            get => _time;
             set
             {
-                time = value;
+                _time = value;
                 OnPropertyChanged();
             } 
         }
 
-        public Address(string ip, string name)
+        public Address(string ipAdd, string name)
         {
             Name = name;
-            IpAdd = ip;
+            IpAdd = ipAdd;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

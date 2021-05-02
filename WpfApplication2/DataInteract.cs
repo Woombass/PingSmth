@@ -4,12 +4,16 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using WpfApplication2.Annotations;
+
 namespace WpfApplication2
 {
     public static  class DataInteract
     {
-        private static string path = Path.Combine(Directory.GetCurrentDirectory(), "config.json");
+        private static string _path = Path.Combine(Directory.GetCurrentDirectory(), "config.json");
 
         public static bool IsIp(string ip)
         {
@@ -21,24 +25,19 @@ namespace WpfApplication2
 
         public static ObservableCollection<Address> GetCollection()
         {
-            if (File.Exists(path))
-            {
-                return JsonConvert.DeserializeObject<ObservableCollection<Address>>(File.ReadAllText(path));
-            }
 
-            return new ObservableCollection<Address>();
+            var jsonString = File.ReadAllText(_path);
+            if (String.IsNullOrWhiteSpace(jsonString))
+            {
+                return new ObservableCollection<Address>();
+            }
+            return JsonSerializer.Deserialize<ObservableCollection<Address>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
 
-        public static void SaveCollection(ObservableCollection<Address> addresses)
+        public  static void SaveCollection(ObservableCollection<Address> addresses)
         {
-;
-        
-            if (!File.Exists(path))
-            {
-                File.Create(path);
-            }
-            var output = JsonConvert.SerializeObject(addresses);
-            File.WriteAllText(path,output);
+            File.WriteAllText(_path,JsonSerializer.Serialize(addresses)); 
+           
         }
     }
 }

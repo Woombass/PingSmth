@@ -1,7 +1,7 @@
 ﻿<Window
-    Height="350"
-    Loaded="MainWindow_OnLoaded"
     Closing="MainWindow_OnClosing"
+    Height="900"
+    Loaded="MainWindow_OnLoaded"
     Title="MainWindow"
     Width="1280"
     WindowState="Maximized"
@@ -15,21 +15,29 @@
     <Grid>
         <StackPanel>
             <TabControl>
-                <TabItem Header="Все IP">
-                    <DataGrid KeyDown="Dg_data_OnKeyDown" AutoGenerateColumns="False" x:Name="dg_data">
+                <TabItem Header="Все IP" MaxHeight="400">
+                    <DataGrid
+                        AutoGenerateColumns="False"
+                        HorizontalScrollBarVisibility="Auto"
+                        KeyDown="Dg_data_OnKeyDown"
+                        MaxHeight="400"
+                        x:Name="dg_data">
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Name, Mode=TwoWay}" Header="Наименование" />
-                            <DataGridTextColumn IsReadOnly="True" Binding="{Binding IpAdd}" Header="IP" />
                             <DataGridTextColumn
-                                IsReadOnly="True"
+                                Binding="{Binding IpAdd}"
+                                Header="IP"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
                                 Binding="{Binding Status}"
                                 Header="Статус"
+                                IsReadOnly="True"
                                 Width="180">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Style.Triggers>
                                             <Trigger Property="Text" Value="Success">
-                                                <Setter Property="Background" Value="Chartreuse"></Setter>
+                                                <Setter Property="Background" Value="Chartreuse" />
                                             </Trigger>
                                             <Trigger Property="Text" Value="DestinationHostUnreachable">
                                                 <Setter Property="Background" Value="Red" />
@@ -42,9 +50,9 @@
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                             <DataGridTextColumn
-                                IsReadOnly="True"
                                 Binding="{Binding Time}"
                                 Header="Время"
+                                IsReadOnly="True"
                                 Width="120" />
                         </DataGrid.Columns>
                     </DataGrid>
@@ -74,19 +82,23 @@
                     Width="150">
                     Добавить IP
                 </Button>
-                <Label FontSize="16" VerticalAlignment="Center">IP: </Label>
+                <Label FontSize="16" VerticalAlignment="Center">IP:</Label>
                 <TextBox
-                    x:Name="Ip_TextBox"
                     Height="20"
                     HorizontalAlignment="Right"
                     Margin="10"
-                    Width="200" />
-                <Label VerticalAlignment="Center" FontSize="16">Имя</Label>
-                <TextBox x:Name="Name_TextBox" VerticalContentAlignment="Center" Height="20" Width="200"></TextBox>
+                    Width="200"
+                    x:Name="Ip_TextBox" />
+                <Label FontSize="16" VerticalAlignment="Center">Имя</Label>
+                <TextBox
+                    Height="20"
+                    VerticalContentAlignment="Center"
+                    Width="200"
+                    x:Name="Name_TextBox" />
                 <Button
-                    Margin="20,0,0,0"
                     Background="Gold"
                     Click="Ping_button_OnClick"
+                    Margin="20,0,0,0"
                     VerticalAlignment="Center"
                     x:Name="ping_button">
                     Пингануть

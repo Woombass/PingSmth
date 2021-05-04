@@ -4,13 +4,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.NetworkInformation;
-using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 
 namespace WpfApplication2
@@ -42,22 +40,26 @@ namespace WpfApplication2
         }
         private async void Ping_button_OnClick(object sender, RoutedEventArgs e)
         {
-            ProblemAddresses = new ObservableCollection<Address>();
-            dg_ProblemIp.ItemsSource = ProblemAddresses;
-            var tasks = IpAddresses.Select(item => new Ping().SendPingAsync(item.IpAdd, 350));
-            var results = await Task.WhenAll(tasks);
-            if (results[0] == null)
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                MessageBox.Show("Проверьте подключение к сети!", "Ошибка!", MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                MessageBox.Show("Проверьте подключение сети!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
+            ProblemAddresses = new ObservableCollection<Address>();
+            dg_ProblemIp.ItemsSource = ProblemAddresses;
+            IEnumerable<Task<PingReply>> tasks;
+            IPStatus ipStatus = IPStatus.Unknown;
+                tasks = IpAddresses.Select(selector: item =>
+                {
+                    return new Ping().SendPingAsync(item.IpAdd,300);
+                });
+                var results = await Task.WhenAll(tasks);
             for (int i = 0; i < results.Length; i++)
             {
                 IpAddresses[i].Status = results[i].Status.ToString();
                 IpAddresses[i].Time = results[i].RoundtripTime;
-                if (IpAddresses[i].Status.ToString() != "Success")
+                if (IpAddresses[i].Status != "Success")
                 {
                     ProblemAddresses.Add(IpAddresses[i]);
                 }

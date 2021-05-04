@@ -11,7 +11,7 @@ using WpfApplication2.Annotations;
 
 namespace WpfApplication2
 {
-    public static  class DataInteract
+    public static class DataInteract
     {
         private static string _path = Path.Combine(Directory.GetCurrentDirectory(), "config.json");
 
@@ -19,25 +19,24 @@ namespace WpfApplication2
         {
             Regex regex = new Regex(@"\d*.\d*.\d*.\d*");
             Match match = regex.Match(ip);
-            if (match.Success) return true;
-            return false;
+            return match.Success;
         }
 
         public static ObservableCollection<Address> GetCollection()
         {
-
             var jsonString = File.ReadAllText(_path);
             if (String.IsNullOrWhiteSpace(jsonString))
             {
                 return new ObservableCollection<Address>();
             }
-            return JsonSerializer.Deserialize<ObservableCollection<Address>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return JsonSerializer.Deserialize<ObservableCollection<Address>>(jsonString,
+                new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
         }
 
-        public  static void SaveCollection(ObservableCollection<Address> addresses)
+        public static void SaveCollection(ObservableCollection<Address> addresses)
         {
-            File.WriteAllText(_path,JsonSerializer.Serialize(addresses)); 
-           
+            File.WriteAllText(_path, JsonSerializer.Serialize(addresses));
         }
     }
 }

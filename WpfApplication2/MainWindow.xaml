@@ -103,6 +103,9 @@
                     x:Name="ping_button">
                     Пингануть
                 </Button>
+                <Button x:Name="StartTimer_Button" Click="StartTimer_Button_OnClick" Height="20" Margin="10,0,10,0">Старт</Button>
+                <Button x:Name="StopTimer_Button" Click="StopTimer_Button_OnClick" Height="20" Margin="0,0,10,0" Content="Стоп"/>
+                <Button x:Name="FillCollection_Button" Click="FillCollection_Button_OnClick" Height="20" Content="Заполнить коллекцию (ДЛЯ ОТЛАДКИ)"/>
             </WrapPanel>
 
 

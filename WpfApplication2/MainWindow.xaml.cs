@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace WpfApplication2
 {
@@ -18,6 +20,7 @@ namespace WpfApplication2
     /// </summary>
     public partial class MainWindow
     {
+        private Timer tm = new Timer(2000);
         public ObservableCollection<Address> IpAddresses { get; set; }
         public ObservableCollection<Address> ProblemAddresses { get; set; }
 
@@ -33,37 +36,43 @@ namespace WpfApplication2
                 File.Create($@"{Directory.GetCurrentDirectory()}\config.json").Close();
             }
 
+            tm.Enabled = false;
+            tm.Elapsed += (o, args) => Pinging();
+        
 
             IpAddresses = DataInteract.GetCollection();
             if (IpAddresses == null) IpAddresses = new ObservableCollection<Address>();
             dg_data.ItemsSource = IpAddresses;
         }
-        private async void Ping_button_OnClick(object sender, RoutedEventArgs e)
-        {
 
+        private async void Pinging()
+        {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
                 MessageBox.Show("Проверьте подключение сети!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
             ProblemAddresses = new ObservableCollection<Address>();
-            dg_ProblemIp.ItemsSource = ProblemAddresses;
+            Dispatcher.Invoke(() => { dg_ProblemIp.ItemsSource = ProblemAddresses; });
             IEnumerable<Task<PingReply>> tasks;
-            IPStatus ipStatus = IPStatus.Unknown;
-                tasks = IpAddresses.Select(selector: item =>
-                {
-                    return new Ping().SendPingAsync(item.IpAdd,300);
-                });
-                var results = await Task.WhenAll(tasks);
+            tasks = IpAddresses.Select(selector: item => { return new Ping().SendPingAsync(item.IpAdd, 300); });
+            var results = await Task.WhenAll(tasks);
             for (int i = 0; i < results.Length; i++)
             {
                 IpAddresses[i].Status = results[i].Status.ToString();
                 IpAddresses[i].Time = results[i].RoundtripTime;
                 if (IpAddresses[i].Status != "Success")
                 {
-                    ProblemAddresses.Add(IpAddresses[i]);
+                    Dispatcher.Invoke(() => ProblemAddresses.Add(IpAddresses[i]));
                 }
             }
+        }
+
+        private void Ping_button_OnClick(object sender, RoutedEventArgs e)
+        {
+
+            Pinging();
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -107,6 +116,25 @@ namespace WpfApplication2
                     IpAddresses.RemoveAt(grid.SelectedIndex);
                 }
             }
+        }
+
+        private void StartTimer_Button_OnClick(object sender, RoutedEventArgs e)
+        {
+            tm.Enabled = true;
+        }
+
+        private void FillCollection_Button_OnClick(object sender, RoutedEventArgs e)
+        {
+
+            for (int i = 0; i < 10; i++)
+            {
+                IpAddresses.Add(new Address("8.8.8.8","Google"));
+            }
+        }
+
+        private void StopTimer_Button_OnClick(object sender, RoutedEventArgs e)
+        {
+            tm.Enabled = false;
         }
     }
 }
